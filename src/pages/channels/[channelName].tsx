@@ -118,7 +118,7 @@ export async function getServerSideProps(context: any) {
   try {
     const res = await UseApi({
       method: "GET",
-      url: `/api/v1/channels/name/${channelName}`,
+      url: `/api/v1/channels/name/${encodeURI(channelName)}`,
     });
     const channel = res.data;
     return {
