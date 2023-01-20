@@ -1,10 +1,17 @@
 import { Video } from "@/eos-defs";
-import { ActionIcon, Avatar, createStyles } from "@mantine/core";
-import { IconThumbDown, IconThumbDownOff, IconThumbUp } from "@tabler/icons";
+import {
+  ActionIcon,
+  Avatar,
+  Button,
+  createStyles,
+  Tooltip,
+} from "@mantine/core";
+import { useScrollIntoView } from "@mantine/hooks";
+import { IconThumbDown, IconThumbUp } from "@tabler/icons";
 import dayjs from "dayjs";
 import getConfig from "next/config";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 const useStyles = createStyles((theme) => ({
   title: {
@@ -49,11 +56,32 @@ const useStyles = createStyles((theme) => ({
         ? theme.colors.dark[0]
         : theme.colors.dark[9],
   },
+  infoButton: {
+    paddingTop: "0.1rem",
+    marginLeft: "-0.4rem",
+  },
+  infoBold: {
+    fontWeight: 700,
+  },
+  infoTitle: {
+    marginTop: "0.5rem",
+    fontWeight: 700,
+    fontSize: "1.25rem",
+  },
 }));
 
 const VideoHeader = (video: Video) => {
   const { publicRuntimeConfig } = getConfig();
   const { classes, cx, theme } = useStyles();
+  const [showInfo, setShowInfo] = useState(false);
+  const { scrollIntoView, targetRef } = useScrollIntoView<HTMLDivElement>();
+
+  const toggleInfo = () => {
+    setShowInfo(!showInfo);
+    if (!showInfo) {
+      scrollIntoView({ alignment: "center" });
+    }
+  };
 
   return (
     <div>
@@ -75,6 +103,20 @@ const VideoHeader = (video: Video) => {
         <div> {dayjs(video.upload_date).format("YYYY/MM/DD")}</div>
         <div className={classes.spacer}>•</div>
         <div>{video.view_count.toLocaleString()} views</div>
+        <div className={classes.spacer}>•</div>
+        <Tooltip label="More information">
+          <Button
+            variant="subtle"
+            color="dark"
+            size="sm"
+            compact
+            className={classes.infoButton}
+            onClick={toggleInfo}
+          >
+            Information
+          </Button>
+        </Tooltip>
+
         {/* Right */}
         <div className={classes.right}>
           {video.like_count && (
@@ -95,6 +137,38 @@ const VideoHeader = (video: Video) => {
           )}
         </div>
       </div>
+      {showInfo && (
+        <div>
+          <div className={classes.infoTitle}>Information</div>
+          <div>
+            <span className={classes.infoBold}>Format:</span> {video.format}
+          </div>
+          <div>
+            <span className={classes.infoBold}>Resolution:</span>{" "}
+            {video.resolution}
+          </div>
+          <div>
+            <span className={classes.infoBold}>FPS:</span> {video.fps}
+          </div>
+          <div>
+            <span className={classes.infoBold}>Audio:</span> {video.audio_codec}{" "}
+            @ {video.abr} kbps
+          </div>
+          <div>
+            <span className={classes.infoBold}>Video:</span> {video.video_codec}{" "}
+            @ {video.vbr} kbps
+          </div>
+          <div>
+            <span className={classes.infoBold}>Original Upload Date:</span>{" "}
+            {video.upload_date}
+          </div>
+          <div>
+            <span className={classes.infoBold}>Import Date:</span>{" "}
+            {video.created_at}
+          </div>
+        </div>
+      )}
+      <div ref={targetRef}></div>
     </div>
   );
 };
